@@ -1,0 +1,21 @@
+# Python bytecode
+*.pyc
+__pycache__/
+
+# Virtual environments
+env/
+venv/
+
+# IDE files
+.idea/
+.vscode/
+
+# Data files
+*.csv
+*.json
+*.log
+
+# Internal folders
+data/
+literature/
+scripts/scraping_cadaster_script.py
