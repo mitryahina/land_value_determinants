@@ -1,5 +1,6 @@
 import logging
 import functools
+import pandas as pd
 
 # Configure the logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
