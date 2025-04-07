@@ -1,10 +1,16 @@
 import logging
 import functools
+import sys
 import pandas as pd
 
 # Configure the logger
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
+logger.handlers.clear()
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 
 def log_dataframe_shape(func):
