@@ -4,12 +4,15 @@ import json
 from utils import log_dataframe_shape
 
 
-def load_data(file_path: str):
+def load_land_monitor_data(file_path: str):
     """Load dataset from a CSV file."""
     df = pd.read_csv(file_path,
                      sep=';',
                      encoding='windows-1251',
-                     on_bad_lines='warn')
+                     on_bad_lines='warn',
+                     parse_dates=['Дата оцінки', 'Дата реєстрації права'],
+                     dayfirst=True
+                     )
     return df
 
 
@@ -76,14 +79,13 @@ def convert_columns(df):
     df[numeric_columns] = df[numeric_columns].apply(pd.to_numeric, errors='coerce')
     df.KOATUU = df.KOATUU.astype(str)
     df.LandPurpose = df.LandPurpose.astype(str)
-    df['ValuationDate'] = pd.to_datetime(df['ValuationDate'], format="%d.%m.%Y")
-    df['RegistrationDate'] = pd.to_datetime(df['RegistrationDate'], format="%Y-%m-%d")
     return df
 
 
 def add_edprou_feature(df):
     df['edprou_indicator'] = np.where(df.EDRPOU.notna(), 1, 0)
     return df
+
 
 def add_time_features(df):
     """Add time-based features such as year, month, week, and day."""
@@ -233,7 +235,7 @@ def construct_full_address(df):
 
 def preprocess_land_data(file_path, geo_file_path):
     """Main preprocessing function."""
-    df = load_data(file_path)
+    df = load_land_monitor_data(file_path)
     df = rename_columns(df)
     df = filter_sale_agreements(df)
     df = clean_duplicates(df)
