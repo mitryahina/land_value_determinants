@@ -1,7 +1,6 @@
 import geopandas as gpd
 from shapely.geometry import box, LineString
 import folium
-from shapely.ops import split
 
 
 # Step 1: Define bounds for Ukraine (approx)
@@ -122,7 +121,6 @@ def main():
     return map_object
 
 
-# Run the script
 if __name__ == "__main__":
     m = main()
-    m.save("ukraine_tiles_map.html")  # Save the map as an HTML file to view in the browser
+    m.save("ukraine_tiles_map.html")
