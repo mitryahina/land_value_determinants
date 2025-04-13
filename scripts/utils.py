@@ -7,7 +7,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 logger.handlers.clear()
 handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter('%(asctime)s - %(message)s')
+formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
