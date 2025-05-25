@@ -2,6 +2,7 @@ import geopandas as gpd
 import pandas as pd
 import json
 from shapely.geometry import Polygon, Point
+import numpy as np
 
 
 def to_polygon(coordinates):
@@ -22,6 +23,23 @@ def get_area(polygon, crs="EPSG:32635"):
     gdf = gdf.to_crs(crs)
     area_ha = gdf.geometry.area.iloc[0] / 10_000  # m² to hectares
     return area_ha
+
+
+def impute_centroids(df):
+    """
+    Impute centroids for plots not present in cadastre with Koatuu aprorximate coordinates.
+    """
+    df = df.copy()
+
+    if "centroid_coords" not in df:
+        df["centroid_coords"] = np.nan
+
+    df["is_precise_location"] = df["centroid_coords"].notna()
+    df["centroid_coords"] = df.apply(
+        lambda row: row["centroid_coords"] if pd.notna(row["centroid_coords"]) else (row["latitude"], row["longitude"]),
+        axis=1
+    )
+    return df
 
 
 def fix_area(df):
@@ -52,6 +70,7 @@ def process_cadaster_locations(df):
     df['area_by_polygon'] = df['geometry'].apply(get_area)
     df['corrected_area'] = fix_area(df)
     df['is_precise_location'] = 1
+    df = impute_centroids(df)
     return df
 
 
