@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 import json
 from utils import log_dataframe_shape
+from data_cleaning import apply_land_purpose_categorization
+from join_variables import join_all_variables_for_modelling
+from join_hromada_data import join_hromada_data
+from join_cropmaps_data import merge_crop_features
 
 
 def load_land_monitor_data(file_path: str):
@@ -122,45 +126,6 @@ def encode_cyclic_features(df, col, max_val):
     return df
 
 
-def categorize_land_purpose(value):
-    if '01.01' in value or 'товарного' in value or '1.1' in value:
-        return '01.01'
-    elif '01.02' in value or 'фермерського' in value or 'для ведення фермерського господарства' in value or '1.2' in value:
-        return '01.02'
-    elif '01.03' in value or 'селянського' in value or 'ДЛЯ ВЕДЕННЯ ОСОБИСТОГО СЕЛЯНСЬКОГО ГОСПОДАРСТВА' in value or '01,03' in value:
-        return '01.03'
-    elif '01.04' in value or 'підсобного сільського' in value or 'підсобного господарства' in value:
-        return '01.04'
-    elif '01.05' in value or 'індивідуального садівництва' in value or 'ведення садівництва' in value:
-        return '01.05'
-    elif '01.06' in value or 'колективного садівництва' in value:
-        return '01.06'
-    elif '01.07' in value:
-        return '01.07'
-    elif '01.08' in value or '1.8' in value:
-        return '01.08'
-    elif '02.01' in value or 'будівництва і обслуговування житлового' in value or '2.1' in value:
-        return '02.01'
-    elif '02.02' in value or 'колективного житлового будівництва' in value or '2.2' in value:
-        return '02.02'
-    elif '03.07' in value:
-        return '03.07'
-    elif '07.03' in value:
-        return '07.03'
-    elif '02.05' in value or '2.5' in value:
-        return '02.05'
-    elif 'землі запасу резервного фонду' in value or '16.0' in value or '17.0' in value or '18.0' in value or '19.0' in value or '16 Землі запасу' in value or 'K.16' in value:
-        return 'SectionK'
-    else:
-        return ''
-
-
-def add_land_purpose_category(df):
-    """Add the categorized land purpose feature."""
-    df['FilteredLandPurpose'] = df['LandPurpose'].apply(categorize_land_purpose)
-    return df
-
-
 def load_koatuu_data(file_path):
     """Load KOATUU geolocation data."""
     with open(file_path) as f:
@@ -247,8 +212,45 @@ def preprocess_land_data(file_path, geo_file_path):
     df = encode_cyclic_features(df, 'Month', 12)
     df = encode_cyclic_features(df, 'WeekOfYear', 53)
     df = encode_cyclic_features(df, 'DayOfMonth', 31)
-    df = add_land_purpose_category(df)
+    df = apply_land_purpose_categorization(df)
     geo_df = load_koatuu_data(geo_file_path)
     df = merge_geo_data(df, geo_df)
     df = construct_full_address(df)
     return df
+
+def construct_dataset_for_modelling():
+    # Step 1: Preprocess main land monitoring data
+    df = preprocess_land_data(
+        "/content/drive/MyDrive/ml_project_land_prices/trans21_clean.csv",
+        "/content/drive/MyDrive/ml_project_land_prices/koatuu.json"
+    )
+
+    # Step 2: Load auxiliary files (mocked here)
+    cadaster_df = pd.read_csv('/content/drive/MyDrive/ml_project_land_prices/cadaster_data.csv')
+    # Intended join: cadastral coordinates and polygons per land plot
+
+    crops_df = pd.read_csv('/content/drive/MyDrive/ml_project_land_prices/tiles_crops/processed_features_crops.csv')
+    # Intended join: crop composition and land use shares from remote sensing tiles
+
+    frontline_distances = pd.read_csv('/content/drive/MyDrive/ml_project_land_prices/frontline_dists.csv').drop("centroid_coords", axis=1)
+    # Intended join: distance from each land plot to occupied, liberated, and pre-2014 zones
+
+    osm_data = pd.read_csv("/content/drive/MyDrive/ml_project_land_prices/interm_roads.csv")
+    # Intended join: road proximity and density indicators from OpenStreetMap
+
+    print("Note: Some source files may require API access, large storage, or preprocessing and are not bundled.")
+    # Merges go here
+
+    # Step 3: Join hromada-level administrative and socio-economic data
+    join_hromada_data()
+
+    # Step 4: Perform all remaining joins and feature construction for modelling
+    join_all_variables_for_modelling()
+
+    print("Final dataset constructed. All spatial, temporal, and institutional features joined.")
+
+
+if __name__ == "__main__":
+    construct_dataset_for_modelling()
+
+

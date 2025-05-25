@@ -88,7 +88,7 @@ def add_variables(df):
     return df
 
 
-def main():
+def join_all_variables_for_modelling():
     df = pd.read_csv("data/processed/geo_features_with_all_sources.csv")
 
     df = df[df.geometry.notna() & df.hromada_code.notna() & df['income_total_2021'].notna()]
@@ -124,4 +124,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    join_all_variables_for_modelling()

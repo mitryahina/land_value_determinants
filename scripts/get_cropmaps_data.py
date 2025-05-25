@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from io import BytesIO
 import time
+import pandas as pd
 import os
 
 # ------------------------------

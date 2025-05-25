@@ -12,8 +12,10 @@ UKRAINE_BOUNDS = {
     "lon_max": 41.0,
 }
 
+
 def is_valid_latitude(lat): return UKRAINE_BOUNDS["lat_min"] <= lat <= UKRAINE_BOUNDS["lat_max"]
 def is_valid_longitude(lon): return UKRAINE_BOUNDS["lon_min"] <= lon <= UKRAINE_BOUNDS["lon_max"]
+
 
 def sort_coordinates(coords):
     """Categorize values into latitude or longitude."""
@@ -24,6 +26,7 @@ def sort_coordinates(coords):
         elif is_valid_longitude(coord):
             longitudes.append(coord)
     return latitudes, longitudes
+
 
 def parse_geometry_string(geometry_str):
     """Parse and convert cleaned string to Polygon."""
@@ -38,7 +41,8 @@ def parse_geometry_string(geometry_str):
     except (SyntaxError, ValueError):
         return None
 
-def main():
+
+def join_hromada_data():
     # === File paths ===
     geo_data_path = "data/processed/assembled_geo_features.csv"
     hromada_geom_path = "data/raw/hromada_geography.csv"
@@ -86,4 +90,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    join_hromada_data()
